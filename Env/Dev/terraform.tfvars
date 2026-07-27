@@ -153,3 +153,13 @@ sas = {
     }
   }
 }
+
+conts = {
+  cont-1 = {
+    cont_name             = "devsecops"
+    container_access_type = "private"
+    storage_name = "harekrishnadevstorage"
+    resource_group_name = "devrg"
+
+  }
+}

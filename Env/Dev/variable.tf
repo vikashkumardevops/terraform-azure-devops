@@ -11,3 +11,5 @@ variable "nics" {} #This variable is for creating network interface card
 variable "nsgs" {} #This variable is used for creating network security groups
 
 variable "sas" {} #This variable is for storage account
+
+variable "conts" {} #This variable is for container creation
