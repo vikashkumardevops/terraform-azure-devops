@@ -23,8 +23,13 @@ module "public_ip" {
 }
 
 module "nics" {
-  depends_on = [ module.subnet, module.public_ip ]
-  source = "../../Modules/azurerm_network_interface"
-  nics = var.nics
-  
+  depends_on = [module.subnet, module.public_ip]
+  source     = "../../Modules/azurerm_network_interface"
+  nics       = var.nics
+}
+
+module "nsg" {
+  depends_on = [module.resource_group]
+  source = "../../Modules/azurerm_network_security_group"
+  nsgs = var.nsgs
 }

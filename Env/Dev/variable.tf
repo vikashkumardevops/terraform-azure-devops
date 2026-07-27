@@ -7,3 +7,5 @@ variable "subnets" {} #This variable is for creating subnets
 variable "pips" {} #This variable is for creating Public IPs
 
 variable "nics" {} #This variable is for creating network interface card
+
+variable "nsgs" {} #This variable is used for creating network security groups

@@ -95,3 +95,46 @@ nics = {
 
   }
 }
+
+nsgs = {
+  nsg-1 = {
+    nsg_name                   = "Public-VM-NSG"
+    location                   = "eastus"
+    resource_group_name        = "dev-rg"
+    rule_name                  = "HTTPS-Allow"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "443"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+    tags = {
+      Environment = "Dev"
+      Host        = "Frontend-VM"
+      Purpose     = "HTTPS"
+    }
+  }
+
+
+  nsg-2 = {
+    nsg_name                   = "Backend-VM-NSG"
+    location                   = "eastus"
+    resource_group_name        = "dev-rg"
+    rule_name                  = "MySQL-Allow"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3306"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+    tags = {
+      Environment = "Dev"
+      Host        = "Backend-VM"
+      Purpose     = "MySQL"
+    }
+  }
+}
