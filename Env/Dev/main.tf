@@ -30,6 +30,12 @@ module "nics" {
 
 module "nsg" {
   depends_on = [module.resource_group]
-  source = "../../Modules/azurerm_network_security_group"
-  nsgs = var.nsgs
+  source     = "../../Modules/azurerm_network_security_group"
+  nsgs       = var.nsgs
+}
+
+module "storage_account" {
+  depends_on = [module.resource_group]
+  source     = "../../Modules/azurerm_storage_account"
+  sas        = var.sas
 }

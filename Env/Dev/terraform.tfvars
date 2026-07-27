@@ -138,3 +138,18 @@ nsgs = {
     }
   }
 }
+
+sas = {
+  sas-1 = {
+    name                     = "harekrishnadevstorage"
+    location                 = "eastus"
+    resource_group_name      = "dev-rg"
+    account_replication_type = "LRS"
+    account_tier             = "Standard"
+    tags = {
+      Environment  = "Dev"
+      Pupose       = "Staic-Assets"
+      "Created By" = "Vikash"
+    }
+  }
+}
