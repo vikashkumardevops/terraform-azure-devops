@@ -61,3 +61,37 @@ pips = {
     }
   }
 }
+
+nics = {
+  nic-1 = {
+    name                          = "frontend-nic"
+    location                      = "eastus"
+    resource_group_name           = "dev-rg"
+    ip_config_name                = "internal"
+    private_ip_address_allocation = "Dynamic"
+    subnet_name                   = "public-subnet"
+    virtual_network_name          = "dev-vnet"
+    pip_name                      = "Frontend-VM-PIP"
+    tags = {
+      Environment = "Dev"
+      Subnet      = "Public"
+    }
+
+  }
+
+  nic-2 = {
+    name                          = "backend-nic"
+    location                      = "eastus"
+    resource_group_name           = "dev-rg"
+    ip_config_name                = "internal"
+    private_ip_address_allocation = "Dynamic"
+    subnet_name                   = "private-subnet"
+    virtual_network_name          = "dev-vnet"
+    pip_name                      = "Backend-VM-PIP"
+    tags = {
+      Environment = "Dev"
+      Subnet      = "Private"
+    }
+
+  }
+}
