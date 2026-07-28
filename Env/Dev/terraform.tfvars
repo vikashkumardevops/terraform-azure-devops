@@ -174,3 +174,7 @@ lbs = {
     ip_config_name      = "PublicIPAddress"
   }
 }
+
+vms = {
+  
+}

@@ -15,3 +15,5 @@ variable "sas" {} #This variable is for storage account
 variable "conts" {} #This variable is for container creation
 
 variable "lbs" {} #This variable is used for Load Balancer creation
+
+variable "vms" {} #This variable is for the virtual machines
