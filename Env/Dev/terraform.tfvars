@@ -158,8 +158,19 @@ conts = {
   cont-1 = {
     cont_name             = "devsecops"
     container_access_type = "private"
-    storage_name = "harekrishnadevstorage"
-    resource_group_name = "devrg"
+    storage_name          = "harekrishnadevstorage"
+    resource_group_name   = "devrg"
 
+  }
+}
+
+lbs = {
+  lb = {
+    pip_name            = "PublicIPForLB"
+    location            = "eastus"
+    resource_group_name = "dev-rg"
+    allocation_method   = "Static"
+    lb_name             = "Public_NLB"
+    ip_config_name      = "PublicIPAddress"
   }
 }

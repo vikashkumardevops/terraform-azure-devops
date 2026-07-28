@@ -13,3 +13,5 @@ variable "nsgs" {} #This variable is used for creating network security groups
 variable "sas" {} #This variable is for storage account
 
 variable "conts" {} #This variable is for container creation
+
+variable "lbs" {} #This variable is used for Load Balancer creation
