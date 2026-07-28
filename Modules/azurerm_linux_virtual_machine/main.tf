@@ -1,8 +1,8 @@
 resource "azurerm_linux_virtual_machine" "vm" {
-    for_each = {
-      vm-1 = {}
-      vm-2 = {}
-    }
+  for_each = {
+    vm-1 = {}
+    vm-2 = {}
+  }
   name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location

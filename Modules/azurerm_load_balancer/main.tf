@@ -1,5 +1,5 @@
 resource "azurerm_public_ip" "lb_pip" {
-  for_each = var.lbs
+  for_each            = var.lbs
   name                = each.value.pip_name
   location            = each.value.location
   resource_group_name = each.value.resource_group_name
@@ -7,7 +7,7 @@ resource "azurerm_public_ip" "lb_pip" {
 }
 
 resource "azurerm_lb" "example" {
-  for_each = var.lbs
+  for_each            = var.lbs
   name                = each.value.lb_name
   location            = each.value.location
   resource_group_name = each.value.resource_group_name

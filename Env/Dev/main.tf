@@ -45,3 +45,9 @@ module "storage_container" {
   source     = "../../Modules/azurerm_storage_container"
   conts      = var.conts
 }
+
+module "app_gateway" {
+  depends_on   = [module.subnet, module.public_ip]
+  source       = "../../Modules/azurerm_application_gateway"
+  app_gateways = var.app_gateways
+}

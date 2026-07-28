@@ -17,3 +17,5 @@ variable "conts" {} #This variable is for container creation
 variable "lbs" {} #This variable is used for Load Balancer creation
 
 variable "vms" {} #This variable is for the virtual machines
+
+variable "app_gateways" {} #This variable is for application gateways

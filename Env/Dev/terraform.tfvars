@@ -176,5 +176,39 @@ lbs = {
 }
 
 vms = {
-  
+
+}
+
+app_gateways = {
+  appgw-1 = {
+    name                       = "dev-app-gateway"
+    resource_group_name        = "dev-rg"
+    location                   = "eastus"
+    sku_name                   = "Standard_v2"
+    sku_tier                   = "Standard_v2"
+    sku_capacity               = 2
+    gateway_ip_config_name     = "app-gateway-ip-config"
+    subnet_name                = "public-subnet"
+    virtual_network_name       = "dev-vnet"
+    frontend_port_name         = "frontend-port-80"
+    frontend_port              = 80
+    frontend_ip_config_name    = "frontend-ip-config"
+    pip_name                   = "Frontend-VM-PIP"
+    backend_address_pool_name  = "backend-pool"
+    backend_http_settings_name = "backend-http-settings"
+    cookie_based_affinity      = "Disabled"
+    backend_path               = "/"
+    backend_port               = 80
+    backend_protocol           = "Http"
+    request_timeout            = 60
+    http_listener_name         = "http-listener"
+    listener_protocol          = "Http"
+    request_routing_rule_name  = "routing-rule-1"
+    rule_type                  = "Basic"
+    priority                   = 100
+    tags = {
+      Environment  = "Dev"
+      "Created By" = "Vikash"
+    }
+  }
 }
