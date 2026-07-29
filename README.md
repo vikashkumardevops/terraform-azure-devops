@@ -287,8 +287,8 @@ Distributed under the MIT License. See [`LICENSE`](file:///d:/Study/Git/azure-re
 *DevOps & Cloud Infrastructure Engineer*
 
 - 🌐 **GitHub**: [@vikashkumardevops](https://github.com/vikashkumardevops)
-- 💼 **LinkedIn**: [Vikash Kumar](https://linkedin.com/in/vikash-kumar-devops)
-- 📧 **Email**: [iamvikash@example.com](mailto:iamvikash@example.com)
+- 💼 **LinkedIn**: [Vikash Kumar](https://www.linkedin.com/in/vikashkumar0505/)
+- 📧 **Email**: [iamvikashkumar05@gmail.com](mailto:iamvikashkumar05@gmail.com)
 - 📂 **Repository**: [terraform-azure-devops](https://github.com/vikashkumardevops/terraform-azure-devops)
 
 ---
