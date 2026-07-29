@@ -50,16 +50,16 @@ pips = {
     }
   }
 
-  pip-2 = {
-    name                = "Backend-VM-PIP"
-    resource_group_name = "dev-rg"
-    location            = "eastus"
-    allocation_method   = "Static"
-    tags = {
-      Environment  = "Dev"
-      "Created By" = "Vikash"
-    }
-  }
+  # pip-2 = {
+  #   name                = "Backend-VM-PIP"
+  #   resource_group_name = "dev-rg"
+  #   location            = "eastus"
+  #   allocation_method   = "Static"
+  #   tags = {
+  #     Environment  = "Dev"
+  #     "Created By" = "Vikash"
+  #   }
+  # }
 }
 
 nics = {
@@ -87,14 +87,13 @@ nics = {
     private_ip_address_allocation = "Dynamic"
     subnet_name                   = "private-subnet"
     virtual_network_name          = "dev-vnet"
-    pip_name                      = "Backend-VM-PIP"
+    # pip_name                      = "Backend-VM-PIP"
     tags = {
       Environment = "Dev"
       Subnet      = "Private"
     }
-
   }
-}
+  }
 
 nsgs = {
   nsg-1 = {
