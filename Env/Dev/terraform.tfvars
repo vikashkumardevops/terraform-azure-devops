@@ -231,7 +231,7 @@ vms = {
       "Created By" = "Vikash"
       OS           = "Ubuntu"
       Owner        = "Vikash"
-      Backup       = "Yes"
+      Backup       = "Daily"
     }
   }
   vm-2 = {
@@ -254,7 +254,7 @@ vms = {
       "Created By" = "Vikash"
       OS           = "Ubuntu"
       Owner        = "Vikash"
-      Backup       = "Yes"
+      Backup       = "Daily"
     }
 
   }
