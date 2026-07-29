@@ -9,7 +9,7 @@
 
 An enterprise-grade, highly scalable, and fully modular **Infrastructure-as-Code (IaC)** solution designed to provision multi-tier cloud landing zones on **Microsoft Azure**. 
 
-Built following industry best practices, this repository leverages reusable HCL modules driven by dynamic data structures (`for_each` maps), strict network isolation, layered security controls, and seamless environment lifecycle management (`Dev` / `Prod`).
+Built following industry best practices, this repository leverages reusable HCL modules driven by dynamic data structures (`for_each` maps), strict network isolation, zero-public-IP backend security patterns, and seamless environment lifecycle management (`Dev` / `Prod`).
 
 ---
 
@@ -31,13 +31,14 @@ Built following industry best practices, this repository leverages reusable HCL 
 
 ## ✨ Key Architecture Highlights
 
-* **100% DRY & Map-Driven Architecture**: All infrastructure resources are instantiated using highly dynamic parameter maps (`rgs`, `vnets`, `subnets`, `vms`, `app_gateways`, etc.), ensuring zero code duplication across environments.
-* **Multi-Tier Network Segregation**: Implements public and private subnet topologies (`10.0.1.0/24` Public, `10.0.2.0/24` Private) within a dedicated Virtual Network (`dev-vnet`).
-* **Granular Network Security (NSGs)**: Micro-segmented firewalls restricting ingress traffic to authorized ports (e.g., HTTPS:443 for Frontend, MySQL:3306 for Database layer).
-* **Layer-7 Application Delivery**: Azure Application Gateway (`Standard_v2`) configured with HTTP/HTTPS listeners, custom backend pools, routing rules, and dynamic health probes.
-* **Layer-4 High Availability**: Network Load Balancer (NLB) for high-throughput TCP/UDP traffic distribution.
-* **Scalable Compute Engine**: Automated Ubuntu Linux VM provisioning (`Standard_D4_v5`) with static/dynamic public IP allocations and managed OS disks.
-* **Remote State & Storage Layer**: Dedicated Azure Storage Account and Blob Container management for state locking and persistent artifact storage.
+* **100% DRY & Map-Driven Architecture**: All infrastructure resources are instantiated using highly dynamic parameter maps (`rgs`, `vnets`, `subnets`, `vms`, `app_gateways`, `nsgs`, etc.), ensuring zero code duplication across environments.
+* **Multi-Tier Network Segregation**: Implements public and private subnet topologies (`10.0.1.0/24` Public Subnet, `10.0.2.0/24` Private Subnet) within a dedicated Virtual Network (`dev-vnet`).
+* **Zero-Public-IP Backend Isolation**: Backend VM (`Backend-VM`) resides strictly in the private subnet without any Public IP allocation, mitigating direct internet exposure and enforcing zero-trust ingress control.
+* **Granular Network Security (NSGs)**: Micro-segmented firewalls restricting ingress traffic to authorized ports (`HTTPS:443` for Frontend VM, `MySQL:3306` for Backend database layer).
+* **Layer-7 Application Delivery**: Azure Application Gateway (`Standard_v2`) configured with HTTP listeners, custom backend pools, routing rules, and dynamic health probes.
+* **Layer-4 High Availability**: Network Load Balancer (`Public_NLB`) for high-throughput TCP/UDP traffic distribution.
+* **Scalable Compute Engine**: Automated Ubuntu Linux VM provisioning (`Canonical ubuntu-24_04-lts`) with managed OS disks, customized tagging (`Backup = "Daily"`), and dynamic NIC attachments.
+* **Remote State & Storage Layer**: Dedicated Azure Storage Account (`harekrishnadevstorage`) and Blob Container (`devsecops`) management for state locking and persistent artifact storage.
 * **Environment Isolation**: Dedicated environment directory structures (`Env/Dev`, `Env/Prod`) allowing clean staging, variable management, and blast-radius mitigation.
 
 ---
@@ -50,15 +51,15 @@ graph TD
         subgraph VNet ["🌐 Virtual Network (10.0.0.0/16 - dev-vnet)"]
             
             subgraph Public_Subnet ["🔓 Public Subnet (10.0.1.0/24)"]
-                AGW["🚦 Application Gateway<br/>(Standard_v2 / Port 80/443)"]
-                FVM["🖥️ Frontend VM<br/>(Ubuntu Linux 24.04 LTS)"]
-                FNIC["🔌 Frontend NIC"]
+                AGW["🚦 Application Gateway<br/>(Standard_v2 / Port 80)"]
+                FVM["🖥️ Frontend VM (vm-1)<br/>(Ubuntu Linux 24.04 LTS)"]
+                FNIC["🔌 Frontend NIC (frontend-nic)"]
                 FNSG["🛡️ Public NSG<br/>(Allow HTTPS:443)"]
             end
             
             subgraph Private_Subnet ["🔒 Private Subnet (10.0.2.0/24)"]
-                BVM["🖥️ Backend VM<br/>(Ubuntu Linux 24.04 LTS)"]
-                BNIC["🔌 Backend NIC"]
+                BVM["🖥️ Backend VM (vm-2)<br/>(Ubuntu Linux 24.04 LTS)"]
+                BNIC["🔌 Backend NIC (backend-nic)<br/>(🔒 No Public IP - Internal Only)"]
                 BNSG["🛡️ Backend NSG<br/>(Allow MySQL:3306)"]
             end
 
@@ -69,19 +70,17 @@ graph TD
             SC["📂 Storage Container<br/>(devsecops / Terraform State)"]
         end
 
-        subgraph Traffic_Management ["🌐 Ingress & Load Balancing"]
-            PIP1["📍 Public IP: Frontend"]
-            PIP2["📍 Public IP: Backend"]
-            LB["⚖️ Public Load Balancer (Public_NLB)"]
+        subgraph Ingress_Layer ["🌐 Ingress & Elastic IPs"]
+            PIP1["📍 Public IP: Frontend-VM-PIP"]
+            LB["⚖️ Network Load Balancer<br/>(Public_NLB / Static PIP)"]
         end
     end
 
     PIP1 --> AGW
-    AGW --> FNIC
+    PIP1 --> FNIC
     FNIC --> FVM
-    PIP2 --> BNIC
+    FVM -. Internal VNet Routing .-> BNIC
     BNIC --> BVM
-    FVM -. Internal Traffic .-> BVM
     FNSG --- Public_Subnet
     BNSG --- Private_Subnet
 ```
@@ -94,7 +93,7 @@ graph TD
 terraform-azure-devops/
 ├── Env/                                    # Environment Orchestration Layer
 │   ├── Dev/                                # Development Environment
-│   │   ├── main.tf                         # Module invocations & dependency order
+│   │   ├── main.tf                         # Module invocations & dependency ordering
 │   │   ├── provider.tf                     # AzureRM Provider specification (v4.81.0)
 │   │   ├── variable.tf                     # Input variable declarations
 │   │   └── terraform.tfvars                # Infrastructure parameters & map definitions
@@ -107,7 +106,7 @@ terraform-azure-devops/
 │   ├── azurerm_application_gateway/        # Layer-7 App Gateway v2 ALB/WAF module
 │   ├── azurerm_bastion/                    # Secure Bastion Host access module
 │   ├── azurerm_key_vault/                  # Secrets & Certificate management module
-│   ├── azurerm_linux_virtual_machine/      # Compute instance module (Ubuntu/RHEL)
+│   ├── azurerm_linux_virtual_machine/      # Compute instance module (Ubuntu 24.04 LTS)
 │   ├── azurerm_load_balancer/              # Layer-4 Network Load Balancer module
 │   ├── azurerm_network_interface/          # Network Interface Card (NIC) module
 │   ├── azurerm_network_security_group/     # Firewalls & Security Rules module
@@ -128,18 +127,18 @@ terraform-azure-devops/
 
 | Module Name | Path | Description | Key Features / Inputs |
 | :--- | :--- | :--- | :--- |
-| **Resource Group** | [`Modules/azurerm_resource_group`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_resource_group) | Lifecycle container for Azure resources | Location, Tags, Dynamic `for_each` creation |
-| **Virtual Network** | [`Modules/azurerm_virtual_network`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_virtual_network) | Core network spine | Address space, DNS servers, Resource scoping |
-| **Subnets** | [`Modules/azurerm_subnet`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_subnet) | Subnet partitioning (Public/Private) | Address prefixes, Service endpoints |
-| **Public IP** | [`Modules/azurerm_public_ip`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_public_ip) | External connectivity endpoints | Static/Dynamic allocation, SKU tiers |
-| **Network Interfaces** | [`Modules/azurerm_network_interface`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_network_interface) | VM Network attachment interfaces | Subnet lookup data source, Public IP binding |
-| **Network Security Groups** | [`Modules/azurerm_network_security_group`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_network_security_group) | Stateful packet filtering firewalls | Custom Inbound/Outbound rules (HTTPS, MySQL) |
-| **Application Gateway** | [`Modules/azurerm_application_gateway`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_application_gateway) | Layer-7 Web Traffic Load Balancer | Standard_v2 SKU, Listener config, HTTP settings |
-| **Load Balancer** | [`Modules/azurerm_load_balancer`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_load_balancer) | Layer-4 Traffic distribution | Public IP frontend, Backend pools, Probes |
-| **Linux Virtual Machines** | [`Modules/azurerm_linux_virtual_machine`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_linux_virtual_machine) | Compute instances (Frontend/Backend) | Canonical Ubuntu 24.04, Disk caching options |
-| **Storage Account & Container** | [`Modules/azurerm_storage_account`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_storage_account) | Cloud object storage & remote backend | Standard LRS/GRS replication, Private containers |
-| **Key Vault** | [`Modules/azurerm_key_vault`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_key_vault) | Hardware security secrets store | RBAC access policies, Secret encryption |
-| **Bastion Host** | [`Modules/azurerm_bastion`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_bastion) | Secure RDP/SSH jump box management | Zero public IP exposure for VMs |
+| **Resource Group** | [`Modules/azurerm_resource_group`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_resource_group) | Lifecycle container for Azure resources | Location (`eastus`), Tags, Dynamic `for_each` creation |
+| **Virtual Network** | [`Modules/azurerm_virtual_network`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_virtual_network) | Core network spine | Address space (`10.0.0.0/16`), VNet scoping |
+| **Subnets** | [`Modules/azurerm_subnet`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_subnet) | Subnet partitioning (Public/Private) | `public-subnet` (`10.0.1.0/24`), `private-subnet` (`10.0.2.0/24`) |
+| **Public IP** | [`Modules/azurerm_public_ip`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_public_ip) | External connectivity endpoints | Static allocation (`Frontend-VM-PIP`, `PublicIPForLB`) |
+| **Network Interfaces** | [`Modules/azurerm_network_interface`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_network_interface) | VM Network attachment interfaces | `frontend-nic` (Public PIP bound), `backend-nic` (Private VNet bound) |
+| **Network Security Groups** | [`Modules/azurerm_network_security_group`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_network_security_group) | Stateful packet filtering firewalls | `Public-VM-NSG` (Allow HTTPS:443), `Backend-VM-NSG` (Allow MySQL:3306) |
+| **Application Gateway** | [`Modules/azurerm_application_gateway`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_application_gateway) | Layer-7 Web Traffic Load Balancer | `Standard_v2` SKU, HTTP Listener (Port 80), Backend Pools |
+| **Load Balancer** | [`Modules/azurerm_load_balancer`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_load_balancer) | Layer-4 Traffic distribution | `Public_NLB`, Static Public IP frontend |
+| **Linux Virtual Machines** | [`Modules/azurerm_linux_virtual_machine`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_linux_virtual_machine) | Compute instances (`Frontend-VM`, `Backend-VM`) | Canonical Ubuntu 24.04 LTS (`Standard_D4_v5`), Daily Backup tags |
+| **Storage Account & Container** | [`Modules/azurerm_storage_account`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_storage_account) | Cloud object storage & remote state backend | `harekrishnadevstorage` (LRS Standard), `devsecops` Private Container |
+| **Key Vault** | [`Modules/azurerm_key_vault`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_key_vault) | Secrets & credentials governance | Hardware Security Secrets, Certificate access policies |
+| **Bastion Host** | [`Modules/azurerm_bastion`](file:///d:/Study/Git/azure-repo/terraform-azure-devops/Modules/azurerm_bastion) | Secure RDP/SSH jump box management | Zero public IP exposure management for VMs |
 
 ---
 
@@ -267,11 +266,12 @@ stages:
 
 ## 🛡️ Security & Enterprise Best Practices
 
+* **Zero-Public-IP Backend Subnet**: Backend instances (`Backend-VM`) are configured without public IP addresses, enforcing pure internal VNet routing and preventing unauthorized external access.
 * **Least Privilege Access Control**: Resource provisioning utilizes isolated Azure Service Principals with RBAC restrictions.
-* **Network Isolation**: Backend database and compute instances reside in isolated private subnets without direct internet exposure.
-* **Secrets Governance**: Sensitive credentials (e.g., VM admin passwords) are injected dynamically via environment variables or Azure Key Vault rather than hardcoded in source control.
-* **Comprehensive Tagging Policy**: All provisioned resources are tagged with metadata (`Environment`, `Created By`, `OS`, `Purpose`, `Owner`) for cost allocation and governance tracking.
-* **State Encryption**: Remote state files are protected at rest with 256-bit AES encryption inside Azure Blob Storage.
+* **Granular Firewalls**: Network Security Groups explicitly limit inbound connections to necessary service ports (`443` for Web, `3306` for Database).
+* **Secrets Governance**: Sensitive credentials (e.g., VM passwords) are injected dynamically via environment variables or Azure Key Vault rather than stored in plain text.
+* **Comprehensive Tagging Policy**: All provisioned resources carry enterprise metadata tags (`Environment`, `Created By`, `OS`, `Backup`, `Owner`) for cost governance and policy auditing.
+* **State Encryption**: Remote state files are protected at rest with 256-bit AES encryption inside Azure Blob Storage containers.
 
 ---
 
