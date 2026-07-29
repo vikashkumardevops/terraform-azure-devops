@@ -175,10 +175,6 @@ lbs = {
   }
 }
 
-vms = {
-
-}
-
 app_gateways = {
   appgw-1 = {
     name                       = "dev-app-gateway"
@@ -210,5 +206,56 @@ app_gateways = {
       Environment  = "Dev"
       "Created By" = "Vikash"
     }
+  }
+}
+
+
+vms = {
+  vm-1 = {
+    name                            = "Frontend-VM"
+    nic_name                        = "frontend-nic"
+    resource_group_name             = "dev-rg"
+    location                        = "eastus"
+    size                            = "Standard_D4_v5"
+    admin_username                  = "adminuser"
+    admin_password                  = "testpassword@123"
+    disable_password_authentication = "false"
+    caching                         = "ReadWrite"
+    storage_account_type            = "Standard_LRS"
+    publisher                       = "Canonical"
+    offer                           = "ubuntu-24_04-lts"
+    sku                             = "server"
+    version                         = "latest"
+    tags = {
+      Environment  = "Frontend"
+      "Created By" = "Vikash"
+      OS           = "Ubuntu"
+      Owner        = "Vikash"
+      Backup       = "Yes"
+    }
+  }
+  vm-2 = {
+    name                            = "Backend-VM"
+    nic_name                        = "Backend-nic"
+    resource_group_name             = "dev-rg"
+    location                        = "eastus"
+    size                            = "Standard_D4_v5"
+    admin_username                  = "adminuser"
+    admin_password                  = "testpassword@123"
+    disable_password_authentication = "false"
+    caching                         = "ReadWrite"
+    storage_account_type            = "Standard_LRS"
+    publisher                       = "Canonical"
+    offer                           = "ubuntu-24_04-lts"
+    sku                             = "server"
+    version                         = "latest"
+    tags = {
+      Environment  = "Backend"
+      "Created By" = "Vikash"
+      OS           = "Ubuntu"
+      Owner        = "Vikash"
+      Backup       = "Yes"
+    }
+
   }
 }
